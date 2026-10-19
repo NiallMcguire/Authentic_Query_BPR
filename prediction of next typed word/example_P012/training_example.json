@@ -1,0 +1,72 @@
+{
+  "input_shape": [
+    1,
+    4,
+    2048
+  ],
+  "axes": [
+    "batch",
+    "causal_word_steps",
+    "EEG_features"
+  ],
+  "normalized_with_training_statistics": false,
+  "targets_are_model_inputs": false,
+  "steps": [
+    {
+      "participant_id": "P012",
+      "trial": "3",
+      "question_id": "tc_504",
+      "word_index": 1,
+      "current_word_for_audit_only": "british",
+      "target_word": "prime",
+      "eeg_file": "/tmp/typing-extraction-P012-dk1azqvf/participants/P012/typing_raw_segments/P012_trial-03.fif",
+      "sampling_rate_hz": 512.0,
+      "window_start_segment_sample": 12482,
+      "cutoff_segment_sample": 12993,
+      "target_first_key_segment_sample": 13596,
+      "prediction_boundary": "completion"
+    },
+    {
+      "participant_id": "P012",
+      "trial": "3",
+      "question_id": "tc_504",
+      "word_index": 2,
+      "current_word_for_audit_only": "prime",
+      "target_word": "minister",
+      "eeg_file": "/tmp/typing-extraction-P012-dk1azqvf/participants/P012/typing_raw_segments/P012_trial-03.fif",
+      "sampling_rate_hz": 512.0,
+      "window_start_segment_sample": 14228,
+      "cutoff_segment_sample": 14739,
+      "target_first_key_segment_sample": 14927,
+      "prediction_boundary": "completion"
+    },
+    {
+      "participant_id": "P012",
+      "trial": "3",
+      "question_id": "tc_504",
+      "word_index": 3,
+      "current_word_for_audit_only": "minister",
+      "target_word": "war",
+      "eeg_file": "/tmp/typing-extraction-P012-dk1azqvf/participants/P012/typing_raw_segments/P012_trial-03.fif",
+      "sampling_rate_hz": 512.0,
+      "window_start_segment_sample": 21143,
+      "cutoff_segment_sample": 21654,
+      "target_first_key_segment_sample": 22214,
+      "prediction_boundary": "completion"
+    },
+    {
+      "participant_id": "P012",
+      "trial": "3",
+      "question_id": "tc_504",
+      "word_index": 4,
+      "current_word_for_audit_only": "War",
+      "target_word": "i",
+      "eeg_file": "/tmp/typing-extraction-P012-dk1azqvf/participants/P012/typing_raw_segments/P012_trial-03.fif",
+      "sampling_rate_hz": 512.0,
+      "window_start_segment_sample": 22926,
+      "cutoff_segment_sample": 23437,
+      "target_first_key_segment_sample": 23733,
+      "prediction_boundary": "completion"
+    }
+  ]
+}

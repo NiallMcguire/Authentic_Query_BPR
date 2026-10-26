@@ -1,0 +1,58 @@
+condition,job_id,epoch,train_loss,primary_validation_loss
+Query-response only,8209433,1,2.9767,0.4882
+Query-response only,8209433,2,2.8304,0.5387
+Query-response only,8209433,3,2.8541,0.5071
+Query-response only,8209433,4,2.8081,0.5241
+Query-response only,8209433,5,2.8031,0.5155
+Query-response only,8209433,6,2.7907,0.5322
++ Question ICT,8209434,1,3.1432,0.4935
++ Question ICT,8209434,2,3.0733,0.4986
++ Question ICT,8209434,3,3.0536,0.4839
++ Question ICT,8209434,4,3.0394,0.4861
++ Question ICT,8209434,5,3.022,0.4793
++ Question ICT,8209434,6,3.0266,0.5005
++ Question ICT,8209434,7,3.0122,0.4847
++ Question ICT,8209434,8,2.9775,0.5062
++ Question ICT,8209434,9,2.9963,0.5313
++ Question ICT,8209434,10,2.9728,0.5367
++ Response ICT,8209435,1,2.9096,0.4776
++ Response ICT,8209435,2,2.8651,0.5091
++ Response ICT,8209435,3,2.8467,0.5306
++ Response ICT,8209435,4,2.8626,0.4942
++ Response ICT,8209435,5,2.8392,0.488
++ Response ICT,8209435,6,2.8273,0.5258
+All Task sources,8209429,1,3.1343,0.4903
+All Task sources,8209429,2,3.0838,0.489
+All Task sources,8209429,3,3.0901,0.4745
+All Task sources,8209429,4,3.0539,0.5076
+All Task sources,8209429,5,3.0536,0.4648
+All Task sources,8209429,6,3.0044,0.5353
+All Task sources,8209429,7,2.9759,0.4932
+All Task sources,8209429,8,2.9983,0.5075
+All Task sources,8209429,9,2.9796,0.5544
+All Task sources,8209429,10,2.9518,0.5307
+All Task + Audio,8209430,1,2.6726,0.5366
+All Task + Audio,8209430,2,2.5356,0.5375
+All Task + Audio,8209430,3,2.4184,0.5093
+All Task + Audio,8209430,4,2.348,0.5135
+All Task + Audio,8209430,5,2.2566,0.5692
+All Task + Audio,8209430,6,2.1803,0.5565
+All Task + Audio,8209430,7,2.1294,0.5382
+All Task + Audio,8209430,8,2.0488,0.5169
+All Task + Visual,8209432,1,2.709,0.5341
+All Task + Visual,8209432,2,2.5418,0.5294
+All Task + Visual,8209432,3,2.3609,0.5061
+All Task + Visual,8209432,4,2.0907,0.5412
+All Task + Visual,8209432,5,1.8944,0.518
+All Task + Visual,8209432,6,1.7163,0.5488
+All Task + Visual,8209432,7,1.5884,0.5616
+All Task + Visual,8209432,8,1.485,0.5289
+All Task + Audio + Visual,8209431,1,2.4764,0.5404
+All Task + Audio + Visual,8209431,2,2.2152,0.549
+All Task + Audio + Visual,8209431,3,1.9971,0.5358
+All Task + Audio + Visual,8209431,4,1.7916,0.5333
+All Task + Audio + Visual,8209431,5,1.635,0.5641
+All Task + Audio + Visual,8209431,6,1.4948,0.5623
+All Task + Audio + Visual,8209431,7,1.3785,0.5552
+All Task + Audio + Visual,8209431,8,1.2892,0.6136
+All Task + Audio + Visual,8209431,9,1.2357,0.5687

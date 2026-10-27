@@ -1,5 +1,7 @@
 """Plot train and primary-validation losses for the Task query-response ablations."""
 
+from __future__ import annotations
+
 import csv
 import re
 from pathlib import Path
@@ -38,14 +40,57 @@ BATCHES = (
             ("All Task + Audio + Visual", "all_task_sources_audio_visual", "8209431"),
         ),
     },
+    {
+        "name": "original Audio BPR split, Task ablations",
+        "log_dir": LOG_ROOT / "prepared_experiments_20261022_audio_bpr_originalsplit" / "logs",
+        "output_stem": "training_validation_losses_originalsplit_task_ablations",
+        "validation_title": "Validation loss (all sources)",
+        "runs": (
+            ("Query-response only", "query_response_only", "8219352"),
+            ("+ Question ICT", "query_response_plus_question_ict", "8219353"),
+            ("+ Response ICT", "query_response_plus_response_ict", "8219354"),
+            ("All Task sources", "all_task_sources", "8219348"),
+            ("All Task + Audio", "all_task_sources_audio", "8219349"),
+            ("All Task + Visual", "all_task_sources_visual", "8219351"),
+            ("All Task + Audio + Visual (OOM)", "all_task_sources_audio_visual", "8219350"),
+        ),
+    },
+    {
+        "name": "original Audio BPR split, query-response + question ICT with external data",
+        "log_dir": LOG_ROOT / "prepared_experiments_20261023_qr_qict_modalities" / "logs",
+        "output_stem": "training_validation_losses_originalsplit_qr_qict_modalities",
+        "validation_title": "Validation loss (all sources)",
+        "runs": (
+            ("A: QR + Question ICT", "query_response_plus_question_ict", "8219353",
+             LOG_ROOT / "prepared_experiments_20261022_audio_bpr_originalsplit" / "logs"),
+            ("B: A + Audio", "query_response_question_ict_audio", "8225508"),
+            ("C: A + Visual", "query_response_question_ict_visual", "8225509"),
+            ("D: A + Audio + Visual", "query_response_question_ict_audio_visual", "8225510",
+             LOG_ROOT / "prepared_experiments_20261023_qr_qict_modalities_256G" / "logs"),
+        ),
+    },
+    *({
+        "name": f"original Audio BPR split, {fmt} typing EEG",
+        "log_dir": LOG_ROOT / "prepared_experiments_20261026_typing" / "logs",
+        "output_stem": f"training_validation_losses_typing_{fmt}",
+        "validation_title": "Validation loss (all sources)",
+        "runs": (
+            ("A: Typing->response + Typing ICT", f"typing_{fmt}", jobs[0]),
+            ("B: A + Audio", f"typing_{fmt}_audio", jobs[1]),
+            ("C: A + Visual", f"typing_{fmt}_visual", jobs[2]),
+            ("D: A + Audio + Visual", f"typing_{fmt}_audio_visual", jobs[3],
+             LOG_ROOT / "prepared_experiments_20261026_typing_256G" / "logs"),
+        ),
+    } for fmt, jobs in (("continuous", ("8236686", "8236687", "8236688", "8236692")),
+                        ("keypress", ("8236689", "8236690", "8236691", "8236693")))),
 )
 SUMMARY_PATTERN = re.compile(r"Epoch\s+(\d+)/\d+\s+Summary:")
 TRAIN_PATTERN = re.compile(r"Train\s+-\s+Loss:\s*([0-9.eE+-]+)")
 VALIDATION_PATTERN = re.compile(r"Val\s+-\s+Loss:\s*([0-9.eE+-]+)")
 
 
-def read_history(log_dir: Path, condition: str, slug: str, job_id: str) -> list[dict]:
-    log_path = log_dir / f"{slug}-{job_id}.out"
+def read_history(log_dir: Path, condition: str, slug: str, job_id: str, run_log_dir: Path | None = None) -> list[dict]:
+    log_path = (run_log_dir or log_dir) / f"{slug}-{job_id}.out"
     lines = log_path.read_text(errors="replace").splitlines()
     history = []
     for line_index, line in enumerate(lines):
@@ -74,7 +119,7 @@ def plot_batch(batch: dict) -> None:
     colors = plt.get_cmap("tab10").colors
     figure, axes = plt.subplots(1, 2, figsize=(15, 6), constrained_layout=True)
 
-    for index, (label, _, _) in enumerate(runs):
+    for index, (label, *_) in enumerate(runs):
         rows = histories[index]
         epochs = [row["epoch"] for row in rows]
         color = colors[index]
@@ -89,8 +134,9 @@ def plot_batch(batch: dict) -> None:
 
     axes[0].set_title("Training loss")
     axes[0].set_ylabel("Mean in-batch contrastive loss")
-    axes[1].set_title("Primary validation loss")
-    axes[1].set_ylabel("Query-to-displayed-response loss")
+    axes[1].set_title(batch.get("validation_title", "Primary validation loss"))
+    axes[1].set_ylabel("Mean in-batch contrastive loss" if "validation_title" in batch
+                       else "Query-to-displayed-response loss")
     for axis in axes:
         axis.set_xlabel("Epoch")
         axis.grid(True, alpha=0.25)

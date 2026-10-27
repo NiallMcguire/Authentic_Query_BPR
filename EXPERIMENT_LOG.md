@@ -185,3 +185,43 @@ Caveats:
 - Only 51–76 query→response test queries per arm.
 - Test sets differ between arms because the original split reshuffles the combined pool.
 - The pair-level split can put question-ICT spans from a trial in training while that trial's query→response pair is in test.
+
+## 2026-10-27: Typing EEG Runs, Training Dynamics and Planned Changes
+
+### Typing data and runs
+
+- Pairs are built by `Audio_BPR/Dataset/authentic_typing_reader.py` into `dataset/authentic_typing_pairs/`. The data covers 882 validated typing trials from 23 participants. P003 and P007 are excluded because they have no keystroke log.
+- Two EEG formats are built for the same trials and spans:
+  - Continuous: 1 s windows, from 200 ms before the first logged key to 800 ms after the last.
+  - Keypress: one −200 to 800 ms epoch per keypress that survives into the submitted query.
+- Pair types:
+  - Typing → response: the full typing EEG, with the same trial's `response_seen` as the positive.
+  - Typing ICT: the EEG for a typed span, with the submitted typed query as the positive (span masked at runtime).
+- Protocol: the same as the reading runs (original Audio BPR split, seed 42, 90% training masking, early stopping on validation loss over all sources).
+- Jobs: continuous A–D `8236686`, `8236687`, `8236688`, `8236692`; keypress A–D `8236689`, `8236690`, `8236691`, `8236693`. Arms B and C add Alice and Nieuwland respectively; arm D adds both and uses 256 GB.
+- Loss plots: `findings/training_validation_losses_typing_{continuous,keypress}.png`.
+
+### Signal above noise
+
+- Continuous typing alone is above noise at every masking level. At 90% masking on the full index, MRR is 0.060 (noise 0.025) and Hit@10 is 0.105 (noise 0.043).
+- Keypress typing → response gives the best single typing result: 0.145 vs 0.088 noise. With audio + visual added it is 0.142 vs 0.102.
+- Continuous typing ICT alone: 0.056 vs 0.035 noise.
+
+### Training dynamics (loss curves and W&B `train/grad_norm`)
+
+- Every step of every run is clipped. The clip threshold is 1.0 and pre-clip gradient norms are about 3–28. The reading runs show the same.
+- Continuous typing alone is still learning when it stops: gradient norms rise from 4 to 13, as they did in reading arm A (5 to 17). Train and validation losses stay close (gap 0.36), so it is underfitting.
+- Keypress typing alone ran only 384 steps (6 epochs), with flat gradient norms around 3. Patience 5 stopped it before learning took off.
+- Adding visual makes the model memorise. Gradient norms spike mid-run (about 25) and then collapse (about 6), training loss drops below 0.5, and validation loss rises after epoch 7–9.
+- Adding audio gives the most stable training. Gradient norms peak and then settle (about 28 to 20), and validation loss improves until about epoch 50.
+- In the mixed arms, early stopping and checkpoint choice follow Alice and Nieuwland, because they dominate the validation loss.
+
+### Planned changes for the next typing round
+
+1. Raise the keypress sequence limit from 50 to about 100, so the 18% of keypress → response pairs currently cut at 50 keys keep the full query.
+2. Add a word-level continuous format: one window per typed word, from its first to its last key.
+3. Use the displayed question as the typing ICT target, so targets are shared across participants. Each typed query is phrased differently, so the current targets are almost all unique.
+4. Pretrain on Alice + Nieuwland, then fine-tune on typing, or use source balancing, so the larger external sets don't dominate.
+5. Run 3 seeds of the typing-only arms to confirm the signal above noise.
+6. For typing-only runs, use patience 15–20 (or a minimum number of epochs), clip threshold 5, and try learning rate 3e-5.
+7. For mixed arms, use the typing validation loss for early stopping.

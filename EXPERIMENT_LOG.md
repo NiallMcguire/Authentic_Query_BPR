@@ -225,3 +225,209 @@ Caveats:
 5. Run 3 seeds of the typing-only arms to confirm the signal above noise.
 6. For typing-only runs, use patience 15–20 (or a minimum number of epochs), clip threshold 5, and try learning rate 3e-5.
 7. For mixed arms, use the typing validation loss for early stopping.
+
+## 2026-10-28: Typing v2 Runs
+
+### What changed from typing v1
+
+The changes below apply only to the `typing_v2_*` arms; reading arms keep the original Audio BPR flags.
+
+- New word-level EEG format: one −200 to 800 ms epoch per typed word, starting at the word's first surviving key. It sits alongside the continuous and keypress formats.
+- Typing ICT now uses the displayed question as its target, with the typed span masked. Only spans typed verbatim in the question are used (789 of 1,676); the rest were reworded or misspelled.
+- Typing-only training settings:
+  - Maximum sequence length 100 (was 50). The 161 keypress pairs cut at 50 keys are now complete.
+  - Learning rate 3e-5.
+  - Patience 20, with no early stopping before epoch 10.
+  - Gradient clip 5.0.
+  - Early stopping on the typing validation loss only.
+- Arms with Alice or Nieuwland use source balancing.
+- The typing-only arms were run with 3 seeds (42, 43, 44).
+- Code: `Audio_BPR` commit `4dd47ac`. Jobs `8237640`–`8237657`, with results in `Audio_BPR/prepared_experiments_20261027_typing_v2{,_256G}/`. The before/after figure is `findings/typing_formats_before_after.png`.
+
+### Full pooled test index, MRR
+
+Typing-only rows are the mean ± SD over 3 seeds; the external-data rows are seed 42. Typing-only arms have 168 test queries, with 76 indexed documents at 0% masking rising to 107 at 90%.
+
+| Arm | 0% | 25% | 50% | 75% | 90% | 100% | Noise |
+|---|---|---|---|---|---|---|---|
+| Continuous | 0.103±.006 | 0.093±.004 | 0.087±.004 | 0.084±.004 | 0.085±.006 | 0.086±.007 | 0.040 |
+| Keypress | 0.087±.002 | 0.078±.002 | 0.081±.002 | 0.078±.004 | 0.078±.003 | 0.078±.002 | 0.043 |
+| Word | 0.074±.010 | 0.064±.010 | 0.055±.010 | 0.053±.008 | 0.052±.008 | 0.052±.008 | 0.049 |
+| Continuous + audio | 0.288 | 0.178 | 0.143 | 0.119 | 0.113 | 0.119 | 0.009 |
+| Continuous + visual | 0.308 | 0.204 | 0.160 | 0.148 | 0.135 | 0.143 | 0.009 |
+| Continuous + audio + visual | 0.329 | 0.210 | 0.168 | 0.149 | 0.143 | 0.150 | 0.006 |
+| Keypress + audio | 0.269 | 0.166 | 0.128 | 0.117 | 0.102 | 0.110 | 0.009 |
+| Keypress + visual | 0.300 | 0.204 | 0.155 | 0.145 | 0.132 | 0.139 | 0.010 |
+| Keypress + audio + visual | 0.311 | 0.193 | 0.158 | 0.140 | 0.138 | 0.143 | 0.005 |
+| Word + audio | 0.277 | 0.167 | 0.142 | 0.115 | 0.109 | 0.115 | 0.009 |
+| Word + visual | 0.305 | 0.201 | 0.156 | 0.142 | 0.127 | 0.139 | 0.012 |
+| Word + audio + visual | 0.319 | 0.208 | 0.163 | 0.146 | 0.139 | 0.142 | 0.005 |
+
+### Full pooled test index, Hit@10
+
+| Arm | 0% | 25% | 50% | 75% | 90% | 100% | Noise |
+|---|---|---|---|---|---|---|---|
+| Continuous | 0.242 | 0.220 | 0.193 | 0.191 | 0.202 | 0.201 | 0.069 |
+| Keypress | 0.190 | 0.181 | 0.157 | 0.157 | 0.165 | 0.163 | 0.070 |
+| Word | 0.185 | 0.165 | 0.129 | 0.125 | 0.129 | 0.127 | 0.107 |
+| Continuous + audio | 0.557 | 0.384 | 0.302 | 0.263 | 0.253 | 0.260 | 0.011 |
+| Continuous + visual | 0.401 | 0.325 | 0.294 | 0.273 | 0.271 | 0.275 | 0.013 |
+| Continuous + audio + visual | 0.516 | 0.367 | 0.321 | 0.293 | 0.283 | 0.285 | 0.006 |
+| Keypress + audio | 0.521 | 0.338 | 0.278 | 0.245 | 0.231 | 0.238 | 0.013 |
+| Keypress + visual | 0.405 | 0.321 | 0.286 | 0.283 | 0.271 | 0.271 | 0.013 |
+| Keypress + audio + visual | 0.479 | 0.351 | 0.305 | 0.285 | 0.265 | 0.273 | 0.007 |
+| Word + audio | 0.546 | 0.353 | 0.291 | 0.254 | 0.235 | 0.248 | 0.012 |
+| Word + visual | 0.406 | 0.317 | 0.290 | 0.280 | 0.269 | 0.270 | 0.016 |
+| Word + audio + visual | 0.501 | 0.354 | 0.308 | 0.288 | 0.273 | 0.277 | 0.006 |
+
+### Per source, MRR at 90% masking / noise
+
+The typing → response pool has about 40 responses; the question ICT pool has 67–75 questions. Typing-only values are 3-seed means.
+
+| Arm | Typing → response | Typing question ICT | Alice | Nieuwland |
+|---|---|---|---|---|
+| Continuous | 0.122 / 0.097 | 0.074 / 0.068 | — | — |
+| Keypress | 0.137 / 0.107 | 0.109 / 0.067 | — | — |
+| Word | 0.103 / 0.093 | 0.074 / 0.064 | — | — |
+| Continuous + audio | 0.107 / 0.096 | 0.075 / 0.070 | 0.122 / 0.010 | — |
+| Continuous + visual | 0.131 / 0.091 | 0.091 / 0.082 | — | 0.146 / 0.010 |
+| Continuous + audio + visual | 0.140 / 0.092 | 0.092 / 0.058 | 0.123 / 0.009 | 0.173 / 0.010 |
+| Keypress + audio | 0.120 / 0.110 | 0.068 / 0.061 | 0.112 / 0.011 | — |
+| Keypress + visual | 0.108 / 0.115 | 0.111 / 0.062 | — | 0.145 / 0.011 |
+| Keypress + audio + visual | 0.101 / 0.086 | 0.146 / 0.062 | 0.126 / 0.012 | 0.162 / 0.011 |
+| Word + audio | 0.097 / 0.111 | 0.098 / 0.067 | 0.118 / 0.010 | — |
+| Word + visual | 0.110 / 0.120 | 0.094 / 0.056 | — | 0.139 / 0.013 |
+| Word + audio + visual | 0.113 / 0.089 | 0.079 / 0.062 | 0.115 / 0.015 | 0.180 / 0.013 |
+
+### Findings
+
+- The three seeds agree closely. Continuous typing alone scores 0.085 ± 0.006 against 0.040 noise at 90% masking (Hit@10 0.20 vs 0.07).
+- Keypress typing ICT against the displayed question is the most consistent typing signal. It is above noise in every seed (0.101, 0.118, 0.108 vs about 0.067). With audio + visual it reaches 0.146 vs 0.062.
+- Typing → response is modestly above noise: keypress 0.137 vs 0.107 (3 seeds), and continuous + audio + visual 0.140 vs 0.092.
+- The word-level format is at noise level so far (0.052 vs 0.049 at 90% masking). One epoch per word gives little EEG per query (median 6 units).
+- These results are not directly comparable to typing v1, because the ICT target and the candidate index both changed.
+
+### Training dynamics
+
+- Typing-only runs peaked early. Continuous trained longest (best epoch 9–12); keypress and word peaked at epochs 1–3.
+- In the external-data arms, the best typing validation loss came at epoch 1–5 and did not improve over the next 20 epochs. The saved checkpoint is therefore an early model. This is also why Alice and Nieuwland score lower here (about 0.12–0.18) than in earlier runs (about 0.19).
+
+### Next steps
+
+1. Pretrain on Alice + Nieuwland, then fine-tune on typing, so typing starts from a model that has already learned from the external data instead of competing with it during training.
+2. Give the word-level format more EEG per word, for example several epochs across the time it took to type the word, not just one at its first key.
+
+## 2026-10-29: Imagined-Query Runs
+
+### Data
+
+- The imagining interval is the 10 s fixation period between reading the question and typing.
+- Pairs are built by `Audio_BPR/Dataset/authentic_imagining_reader.py` into `dataset/authentic_imagining_pairs/`. There are 1,055 trials from 25 participants; P003 and P007 are included.
+- Main task: imagined EEG → `response_seen`.
+- Imagining ICT: two 2–4 s crops per trial (2,110 per variant), each paired with the displayed question with a span masked. Three masking variants:
+  - Position-aligned: the words at the same relative position in the question as the crop is in the window.
+  - Pace-aligned: the words the participant's mean reading fixation duration places inside the crop. 1,335 crops fall after the question would have been finished and are left unmasked.
+  - Random span: a random span of the same length (control).
+- Code: `Audio_BPR` commit `47acfcb`. Jobs `8241979`–`8241992`; results in `Audio_BPR/prepared_experiments_20261028_imagining_v2{,_256G}/`.
+
+### Runs
+
+- Method comparison (imagined EEG → response, imagining data only):
+  - Window: all ten 1 s units, mean-pooled (baseline).
+  - Crop: random 2–4 s crops during training; full window at test.
+  - Crop-average: as Crop, but tested on the average of 5 evenly spaced 3 s crops.
+  - Sliding window: 2 s windows with a 1 s step; each trial is scored by its best-matching window.
+  - Transfer: starts from the reading arm A model.
+  - Pace-aligned / Uniform / Shuffled: one segment per typed word, each the length of that participant's mean fixation duration, placed end to end from the start / spread evenly / at random positions.
+- Arms:
+  - A: imagined → response plus imagining ICT, once for each masking variant.
+  - B: A (position-aligned) + Alice.
+  - C: A (position-aligned) + Nieuwland.
+  - D: A (position-aligned) + Alice + Nieuwland (256 GB).
+- Settings: learning rate 3e-5, patience 20, no early stopping before epoch 10, gradient clip 5, early stopping on imagining validation loss, original Audio BPR split, seed 42. B–D use source balancing.
+
+### Full pooled test index, MRR
+
+The method runs are not masked, so their score is the same at every masking level.
+
+| Arm | 0% | 25% | 50% | 75% | 90% | 100% | Noise | Best epoch |
+|---|---|---|---|---|---|---|---|---|
+| Window (baseline) | 0.108 | 0.108 | 0.108 | 0.108 | 0.108 | 0.108 | 0.115 | 2 |
+| Crop | 0.094 | 0.094 | 0.094 | 0.094 | 0.094 | 0.094 | 0.088 | 21 |
+| Crop-average | 0.108 | 0.108 | 0.108 | 0.108 | 0.108 | 0.108 | 0.087 | 21 |
+| Sliding window | 0.091 | 0.091 | 0.091 | 0.091 | 0.091 | 0.091 | 0.097 | 1 |
+| Transfer | 0.111 | 0.111 | 0.111 | 0.111 | 0.111 | 0.111 | 0.112 | 2 |
+| Pace-aligned | 0.104 | 0.104 | 0.104 | 0.104 | 0.104 | 0.104 | 0.105 | 1 |
+| Uniform | 0.101 | 0.101 | 0.101 | 0.101 | 0.101 | 0.101 | 0.113 | 1 |
+| Shuffled | 0.075 | 0.075 | 0.075 | 0.075 | 0.075 | 0.075 | 0.119 | 1 |
+| A: position-aligned ICT | 0.075 | 0.068 | 0.058 | 0.058 | 0.055 | 0.054 | 0.056 | 3 |
+| A: pace-aligned ICT | 0.091 | 0.085 | 0.082 | 0.080 | 0.076 | 0.075 | 0.047 | 14 |
+| A: random-span ICT | 0.095 | 0.080 | 0.069 | 0.066 | 0.063 | 0.064 | 0.035 | 14 |
+| B: A + audio | 0.408 | 0.276 | 0.230 | 0.209 | 0.205 | 0.212 | 0.008 | 190 |
+| C: A + visual | 0.374 | 0.261 | 0.212 | 0.195 | 0.188 | 0.195 | 0.013 | 180 |
+| D: A + audio + visual | 0.397 | 0.259 | 0.217 | 0.196 | 0.190 | 0.196 | 0.006 | 100 |
+
+### Full pooled test index, Hit@10
+
+| Arm | 0% | 25% | 50% | 75% | 90% | 100% | Noise |
+|---|---|---|---|---|---|---|---|
+| Window | 0.274 | 0.274 | 0.274 | 0.274 | 0.274 | 0.274 | 0.292 |
+| Crop | 0.208 | 0.208 | 0.208 | 0.208 | 0.208 | 0.208 | 0.255 |
+| Crop-average | 0.217 | 0.217 | 0.217 | 0.217 | 0.217 | 0.217 | 0.264 |
+| Sliding window | 0.245 | 0.245 | 0.245 | 0.245 | 0.245 | 0.245 | 0.255 |
+| Transfer | 0.292 | 0.292 | 0.292 | 0.292 | 0.292 | 0.292 | 0.292 |
+| Pace-aligned | 0.189 | 0.189 | 0.189 | 0.189 | 0.189 | 0.189 | 0.245 |
+| Uniform | 0.226 | 0.226 | 0.226 | 0.226 | 0.226 | 0.226 | 0.283 |
+| Shuffled | 0.170 | 0.170 | 0.170 | 0.170 | 0.170 | 0.170 | 0.226 |
+| A: position-aligned ICT | 0.183 | 0.139 | 0.126 | 0.114 | 0.110 | 0.107 | 0.079 |
+| A: pace-aligned ICT | 0.211 | 0.196 | 0.202 | 0.170 | 0.174 | 0.170 | 0.104 |
+| A: random-span ICT | 0.208 | 0.192 | 0.177 | 0.155 | 0.158 | 0.158 | 0.079 |
+| B: A + audio | 0.615 | 0.472 | 0.433 | 0.406 | 0.392 | 0.392 | 0.013 |
+| C: A + visual | 0.496 | 0.423 | 0.396 | 0.384 | 0.378 | 0.377 | 0.019 |
+| D: A + audio + visual | 0.556 | 0.442 | 0.399 | 0.389 | 0.384 | 0.387 | 0.010 |
+
+### Per source, MRR at 90% masking / noise
+
+The imagined → response pool has about 40 responses (chance about 0.107).
+
+| Arm | Imagined → response | Imagining ICT | Alice | Nieuwland |
+|---|---|---|---|---|
+| Methods (all 8) | 0.075–0.111 / 0.10–0.12 | — | — | — |
+| A: position-aligned | 0.130 / 0.144 | 0.050 / 0.054 | — | — |
+| A: pace-aligned | 0.138 / 0.108 | 0.094 / 0.061 | — | — |
+| A: random-span | 0.156 / 0.104 | 0.047 / 0.034 | — | — |
+| B: + audio | 0.395 / 0.099 | 0.203 / 0.036 | 0.203 / 0.007 | — |
+| C: + visual | 0.460 / 0.089 | 0.222 / 0.035 | — | 0.174 / 0.012 |
+| D: + audio + visual | 0.347 / 0.090 | 0.186 / 0.025 | 0.204 / 0.013 | 0.181 / 0.010 |
+
+### Findings
+
+- On imagining data alone, the windowing and pacing methods are at chance, and most reach their best validation loss at epoch 1–2. About 850 training pairs pointing at about 48 responses is not enough training signal.
+- Arm A with imagining ICT is mixed: the pace-aligned and random-span versions are modestly above noise; the position-aligned version is not.
+- Adding external data makes imagining learn. Imagined → response reaches about 4–5× noise:
+  - C (+ visual) is best: 0.460 vs 0.089.
+  - B (+ audio): 0.395 vs 0.099.
+  - D (+ both): 0.347 vs 0.090. It is below either alone, likely because balancing gives imagining a third of the training samples instead of half.
+- Imagining ICT also rises to about 0.19–0.22 vs about 0.03.
+- Visual reading EEG (Nieuwland) helping imagining most is the opposite of reading and typing, where visual data hurt.
+- Alice and Nieuwland themselves are unaffected (about 0.17–0.20).
+
+### Caveats
+
+- B–D differ from A in three ways at once: external data, source balancing (which oversamples imagining pairs), and much longer training (best epoch 100–190 vs 3–14).
+- Possible trial overlap. The split assigns individual pairs, not trials, so a trial's ICT crops (slices of its imagining window) can be in training while its full window is in test. Over 100+ epochs the model can learn to recognise that trial's EEG, and the response and question share a topic. The same applies, more mildly, to reading arm A, whose question-ICT spans are subsets of the full-question fixation epochs.
+- Single seed; 84–115 imagined → response test queries per arm.
+
+### Next steps
+
+1. Rerun imagining arms A–D (and reading arm A for comparison) with the trial-grouped split (`--split-strategy trial`), so each trial's crops and full window stay in the same split.
+2. Separate the external data from the extra training: run arm A with source balancing and a fixed long run (e.g. 150 epochs) but no Alice or Nieuwland.
+3. Run 3 seeds for arms B and C, ideally under the trial-grouped split.
+4. Find out why visual helps: pretrain on Nieuwland only and fine-tune on imagining, then compare with transfer from reading arm A.
+5. Re-run the windowing methods inside arm C (crop, crop-average, sliding window, pace / uniform / shuffled), now that the model learns.
+6. Use the sliding-window scores to find when, within the 10 s window, the query content appears.
+7. Combined targets: treat the question and the response both as correct for the full window, using the best arm.
+8. Compare reading, typing and imagining on the same trials with the trial-grouped split.
+9. Housekeeping: storage is over quota (829 GB vs 350 GB). The unused question and typed-query imagining files (about 8 GB) can be deleted.
+
+Steps 1–3 come first: they are cheap and decide whether the imagining result holds before investing in steps 4–8.

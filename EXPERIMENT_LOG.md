@@ -431,3 +431,84 @@ The imagined → response pool has about 40 responses (chance about 0.107).
 9. Housekeeping: storage is over quota (829 GB vs 350 GB). The unused question and typed-query imagining files (about 8 GB) can be deleted.
 
 Steps 1–3 come first: they are cheap and decide whether the imagining result holds before investing in steps 4–8.
+
+## 2026-10-30: Imagining v3 (Trial-Grouped Split) — First Results
+
+### Why these runs were needed
+
+All earlier runs used the original Audio BPR split, which assigns individual pairs to train, validation and test at random. Several pairs come from the same trial's EEG, so one trial could be split across training and test:
+
+- Imagining: a trial's ICT crops (2–4 s slices of its imagining window) could be in training while that trial's full 10 s window was in test. The test query then contained EEG the model had already been trained on.
+- Reading: the question-ICT spans are subsets of the same fixation epochs used for the full-question query, so the same overlap applied.
+
+With long training, the model can learn to recognise a specific trial's EEG rather than anything general. Because the question and the response share a topic, that is enough to score well at test. The trial-grouped split (`--split-strategy trial`, split seed 42) keeps all of a trial's pairs in the same split. A check confirmed no trial is shared between train and test, or between train and validation (2,547 / 291 / 327 imagining pairs).
+
+### Purpose of each completed run
+
+| Run | Question it answers |
+|---|---|
+| Imagining A (position, pace and random-span ICT) | Does imagining still work when each trial's data stays entirely in training or entirely in test? |
+| Imagining A, balanced, fixed 150 epochs | Does longer, balanced training help without external data? |
+| Imagining A, transfer from reading | Does starting from a reading-trained model help? |
+| Reading arm A, trial-grouped split | Does reading's earlier good result survive the stricter split? |
+
+### Results (MRR at 90% masking; chance about 0.10)
+
+The main task is imagined EEG → response (imagining) or question-reading EEG → response (reading).
+
+| Run | Main task | Noise | ICT | Noise |
+|---|---|---|---|---|
+| Imagining A, position-aligned ICT | 0.102 | 0.091 | 0.041 | 0.035 |
+| Imagining A, pace-aligned ICT | 0.097 | 0.086 | 0.048 | 0.058 |
+| Imagining A, random-span ICT | 0.095 | 0.084 | 0.047 | 0.036 |
+| Imagining A, balanced, 150 epochs | 0.178 | 0.092 | 0.071 | 0.023 |
+| Imagining A, transfer from reading | 0.104 | 0.087 | 0.039 | 0.035 |
+| Reading arm A, trial-grouped split | 0.116 | 0.102 | 0.032 | 0.043 |
+
+Reading arm A under the two splits:
+
+| Split | Query → response | Noise |
+|---|---|---|
+| Original (pair-level) | 0.293 | 0.129 |
+| Trial-grouped (stricter) | 0.116 | 0.102 |
+
+### What this tells us so far
+
+- The stricter split removes most of the earlier gains. Reading arm A drops from well above noise to close to noise, so much of the earlier result likely came from the same trial's EEG appearing in both training and test.
+- Long, balanced training is the only imagining run clearly above noise: about 2× noise on the main task and 3× on ICT, without external data.
+- The ICT masking choice made no difference: position, pace and random-span masking all score at noise level.
+- Transfer from reading did not help; it matched training from scratch.
+- The external-data runs (arms B, C, D, the seeds, the Nieuwland transfer, and the methods inside arm C) are still missing; see below.
+
+### What "balanced" means
+
+`--balance_sources` replaces the normal shuffle with weighted sampling. Each source gets an equal share of the draws in an epoch, regardless of its size. Pairs are drawn with replacement, so pairs from smaller sources repeat within an epoch and some from larger sources are skipped. An epoch keeps the same total number of draws.
+
+For imagining arm A (about 2,550 training pairs):
+
+| Source | Training pairs | Draws per epoch, unbalanced | Draws per epoch, balanced |
+|---|---|---|---|
+| Imagined window → response | ~850 | ~850 (each once) | ~1,275 (each ~1.5×) |
+| Imagining ICT crops → question | ~1,700 | ~1,700 (each once) | ~1,275 (each ~0.75×) |
+
+Balancing gives the main task a larger share of training. In arms B–D it also stops Alice and Nieuwland (about 6,500 pairs each) from swamping the imagining data.
+
+The "balanced, 150 epochs" run changed two things compared with plain arm A:
+
+| Setting | Arm A (position-aligned) | Arm A, balanced, 150 epochs |
+|---|---|---|
+| Sampling | Each pair once per epoch | Balanced |
+| Training length | Stops early (patience 20, at least 10 epochs) | Fixed 150 epochs |
+| Imagined → response | 0.102 / 0.091 noise | 0.178 / 0.092 noise |
+
+So we cannot yet say whether balancing or longer training caused the improvement. One extra run would separate them: arm A for 150 epochs without balancing.
+
+### Other issues found
+
+- Missing input files: `/users/gxb18167/BPR_mean_pooling_inputs/` (the Alice and Nieuwland pair files) had been deleted, so all 15 runs using external data failed at startup. Both files were regenerated on 2026-10-30 (job `8245155`) from the raw data (`~/Alice`, `~/Processed segmented data`, `~/Sentence Materials`) using the original readers and seed 42. They match the originals: 8,134 Alice and 8,132 Nieuwland pairs, with the same EEG shapes (6 × 85 × 128 and 6 × 250 × 32). The Alice reader's hard-coded old data path was redirected to `~/Alice` on a temporary copy; the reader itself was not changed.
+- Checkpoint bug (in the original Audio BPR code): the best model is saved with `model.state_dict().copy()`, which copies only the dictionary, not the weights. The "saved" weights keep changing during training, so every run so far has been tested with the final-epoch model (best epoch plus patience), not the best one. This affects all runs equally, reading and typing included, and explains why every run reports "best epoch 1" yet scores differently. Pending decision: fix it (test the genuinely best epoch) or keep the original behaviour for comparability.
+
+### Next steps
+
+1. Decide on the checkpoint fix, then resubmit the 15 failed imagining runs (arms B–D, seeds, Nieuwland transfer, methods inside arm C, combined targets).
+2. Run arm A for 150 epochs without balancing, to separate balancing from training length.

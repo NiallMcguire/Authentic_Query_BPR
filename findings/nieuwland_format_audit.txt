@@ -1,0 +1,22 @@
+NIEUWLAND FORMAT AUDIT
+======================
+Participants the reader used (others had no sentence triggers and were skipped): 51
+Reader decodes: {('int16', 32): 47, ('int16', 8): 3, ('int16', 16): 1} (dtype, channels); always multiplexed, always 500 Hz.
+Format information available: {'ehst2': 35, 'same lab': 12, 'vhdr': 4}
+Declared formats: {('int32', 'vectorized'): 51}
+Declared channel counts: {22: 38, 26: 13}
+Declared sampling rates (Hz): {250.0: 1, 500.0: 21, 1000.0: 2, 512.0: 24, 256.0: 3}
+Reader decode matches the declared format: 0 of 51 with format information.
+Declared format fills the file exactly (whole 1.5 s segments): 36 of 51.
+1.5 s segments per participant: [132, 144, 153, 153, 154, 154, 156, 156, 156, 157, 158, 158, 159, 159, 160, 160, 168, 215, 217, 224, 231, 233, 233, 234, 236, 236, 237, 237, 239, 239, 239, 240, 240, 240, 240, 240]
+Median lag-1 autocorrelation (EEG is smooth, so close to 1 means a correct decode):
+  declared decode: 0.995
+  reader decode:   0.490
+
+Notes
+- Files that do not fill whole segments (Kent, Stirling STIR7, Oxford) most likely hold 2 more
+  channels (eye channels) than their history file lists; their exact channel count is unconfirmed.
+- Every file is a set of 1.5 s epochs (0.5 s before to 1 s after a marked word), not a continuous
+  recording, so sentence-long word sequences cannot be cut from these files.
+
+Per-participant details: nieuwland_format_audit.csv

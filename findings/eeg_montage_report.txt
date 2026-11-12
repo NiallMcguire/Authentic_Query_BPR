@@ -1,0 +1,19 @@
+EEG MONTAGE AND SAMPLING-RATE CHECK
+===================================
+
+Task (reading, typing, imagining)
+- 512 Hz; units are 513 samples (1 s).
+- 64 channels: 62 scalp (10-10 names) + LEFT EAR / RIGHT EAR (used as A1 / A2).
+- Filters in the files: highpass 0.0 Hz, lowpass 256.0 Hz.
+- Reference: recording reference (no re-referencing applied in the pair files).
+
+Alice (audio)
+- Recorded at 500 Hz; the pair files are at 128 Hz.
+- resampled 500->128 Hz, 4th-order Butterworth 0.5 Hz to 0.99*Nyquist, average reference over all 62 recorded channels (incl. VEOG, Aux5), zero-padded to 128 channels (alice_ict_reader_v2.Preprocess).
+- 62 recorded channels, numbered EasyCap M10 positions (no 10-10 names).
+- 38 electrodes map to a task 10-10 electrode (EasyCap M10 numbered electrode -> nearest task 10-10 electrode within 20 mm (one-to-one), MNE template positions).
+
+Nieuwland (visual)
+- Rebuilt from the continuous recordings: 500 Hz, 250-sample word windows, 22 channels (F7 F3 Fz F4 F8 FC5 FC1 FC2 FC6 C3 Cz C4 CP5 CP1 CP2 CP6 P7 P3 Pz P4 P8 Oz); 0.5-100 Hz band-pass, 50 Hz notch, average reference over the 22 channels.
+- The old pair files: nieuwland_ict_pairs_RUNTIME_MASKING.npy was built from 1.5 s article/noun epochs read as int16 multiplexed data; do not use.
+

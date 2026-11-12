@@ -29,6 +29,19 @@ READ_MOD = "prepared_experiments_20261023_qr_qict_modalities"
 TYPE1 = "prepared_experiments_20261026_typing"
 TYPE2 = "prepared_experiments_20261027_typing_v2"
 IMAG = "prepared_experiments_20261028_imagining_v2"
+# Every arm with Nieuwland (visual) data was rerun on the rebuilt Nieuwland pairs (2026-11-11).
+NIEUWLAND_RERUN = "prepared_experiments_20261111_nieuwland_rerun"
+MISSING_RERUNS = []
+
+
+def _with_rerun(exp: str, arm: str, ext: str) -> str:
+    if "visual" not in ext:
+        return exp
+    rerun = NIEUWLAND_RERUN + ("_256G" if exp.endswith("_256G") else "")
+    if (BPR / rerun / "results" / arm / "test_by_source" / "all_sources_metrics.json").exists():
+        return rerun
+    MISSING_RERUNS.append(arm)
+    return exp
 
 
 # --------------------------------------------------------------------------- loading
@@ -47,7 +60,7 @@ class Run:
     def __init__(self, key, label, exp, arms, roles, ext="none"):
         self.key, self.label, self.ext, self.roles = key, label, ext, roles
         arms = arms if isinstance(arms, list) else [arms]
-        self.data = [_load_arm(exp, arm) for arm in arms]
+        self.data = [_load_arm(_with_rerun(exp, arm, ext), arm) for arm in arms]
         self.n_seeds = len(arms)
 
     def get(self, role, level, name):
@@ -481,7 +494,8 @@ Terms used throughout
   documents only. This is the fair way to compare a task across arms.
 - Noise baseline: the same test, with the EEG replaced by Gaussian noise (90% masking).
 - Audio = Alice (listening EEG, 8,134 ICT pairs). Visual = Nieuwland (reading EEG,
-  8,132 ICT pairs). Both come from the original Audio BPR project.
+  8,132 ICT pairs, rebuilt from the continuous recordings; see section 3).
+  Both come from the original Audio BPR project.
 """
 
 METHODS = """\
@@ -588,20 +602,29 @@ EXTERNAL_TEXT = """\
 3. DID EXTERNAL DATA HELP?
 ==========================
 
+Note on the Nieuwland (visual) data
+- The earlier Nieuwland pairs were built from the short (1.5 s) article/noun epochs in
+  the "Processed segmented data" files. Those files were read in the wrong number format,
+  so the EEG in those pairs did not match the words.
+- The Nieuwland pairs were rebuilt from the continuous OSF recordings, which mark every
+  word: 22 channels, 500 Hz, 1 s per word, 227 participants from 6 labs. The same
+  8,132-pair size was kept.
+- Every arm with Nieuwland data was rerun on the rebuilt pairs, with nothing else
+  changed. All results below use the reruns.
+
 Short answer
-- Pooled-index scores rise sharply with external data in every modality, because the
-  external sources are large and learn well. The per-source tables below isolate the
-  effect on each task.
+- Pooled-index scores rise with external data in every modality, mostly because Alice
+  is large and learns well. The per-source tables below isolate the effect on each task.
 - Reading: the task-only arm A gives the strongest query -> response result. Adding
-  audio keeps query -> response above noise; visual data gives less.
-- Typing: external data gives the best typing -> response results for continuous typing
-  (audio + visual: {t_cont_av}) and the best typing question ICT for keypress
-  (audio + visual: {t_key_av_ict}).
+  audio keeps query -> response above noise; visual data brings it close to noise.
+- Typing: visual data gives the best typing -> response results for continuous typing
+  (v2 + visual: {t_cont_v}, + audio + visual: {t_cont_av}). Audio + visual gives the
+  best typing question ICT for keypress ({t_key_av_ict}).
 - Imagining: external data gives the biggest gain of all modalities. Imagined -> response
   rises from {i_a} (task only) to {i_c} with visual data and {i_b} with audio.
   Imagining ICT rises from {i_a_ict} to about {i_bcd_ict}.
-- Alice and Nieuwland themselves score about 0.11-0.20 MRR in every mixed arm (noise
-  about 0.01).
+- On their own test sets, Alice scores about {alice} MRR and the rebuilt Nieuwland
+  about {nieuwland} (noise about 0.01).
 
 """
 
@@ -611,9 +634,16 @@ def build_text(reading, typing_v1, typing_v2, imagining_methods, imagining_arms)
     fv = lambda run, role: fmt_val(run.get(role, 90, "rr"))  # noqa: E731
     parts = [HEADER, METHODS]
 
+    def source_range(role):
+        values = [run.get(role, 90, "rr") for run in reading + typing_v1 + typing_v2 + imagining_arms]
+        values = [v[0] for v in values if v is not None]
+        return f"{min(values):.2f}-{max(values):.2f}"
+
     ext = EXTERNAL_TEXT.format(
+        t_cont_v=fv(find(typing_v2, "continuous_visual"), "main"),
         t_cont_av=fv(find(typing_v2, "continuous_av"), "main"),
         t_key_av_ict=fv(find(typing_v2, "keypress_av"), "ict"),
+        alice=source_range("alice"), nieuwland=source_range("nieuwland"),
         i_a=fv(find(imagining_arms, "A_position"), "main"), i_b=fv(find(imagining_arms, "B"), "main"),
         i_c=fv(find(imagining_arms, "C"), "main"),
         i_a_ict=fv(find(imagining_arms, "A_position"), "ict"),
@@ -677,7 +707,7 @@ How to read the tables
 - Typing v2 (3 seeds) is stable across seeds. On the full pooled index at 90% masking:
   continuous {c} vs {cn} noise, keypress {k} vs {kn}, word {w} vs {wn}.
 - Keypress typing gives the strongest typing ICT signal: {kict} vs {kictn} noise.
-- With audio + visual data, pooled MRR reaches about 0.14 for all three formats.
+- With audio data, pooled MRR reaches about 0.10-0.11 for all three formats.
 
 """.format(c=fv(cont, "pooled"), cn=fmt_val(cont.get("pooled", "noise", "rr")), k=fv(key, "pooled"),
            kn=fmt_val(key.get("pooled", "noise", "rr")), w=fv(word, "pooled"),
@@ -722,6 +752,8 @@ def main():
     _style()
     FIG_DIR.mkdir(parents=True, exist_ok=True)
     reading, typing_v1, typing_v2, imagining_methods, imagining_arms = build_runs()
+    if MISSING_RERUNS:
+        print("WARNING: old Nieuwland results still used for", MISSING_RERUNS)
     OUT_TXT.write_text(build_text(reading, typing_v1, typing_v2, imagining_methods, imagining_arms))
     print(OUT_TXT)
     for path in (fig_external_effect(reading, typing_v2, imagining_arms),

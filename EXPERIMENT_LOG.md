@@ -578,3 +578,10 @@ Still to generate once results are in:
   - Stirling: the Neuroscan headers store a wrong sample count. It is now recomputed from the event-table position (int32 samples, 250 Hz); markers end inside the data.
   - Glasgow: BioSemi A1–D32 electrodes are now matched to the 22 channels by direction on the head (≤ 12°), which finds all 22.
 - Job `8298090` builds these three labs and writes a separate pair set, `nieuwland_all_labs_ict_pairs_{all,RUNTIME_MASKING}.npy`. The existing `nieuwland_continuous_*` file is unchanged, so the running setup jobs and the reruns stay consistent.
+
+## 2026-11-16: Pilot Queue and Remaining Retries
+
+- The GPU QoS allows at most two days per job. Foundation-model jobs were generated with a three-day limit, so `stage_scheduler.py` now requests two days for FM jobs. Existing pilot jobs `8298074`–`8298088` were updated in place and are pending with the corrected limit.
+- The two setup arms that ran out of memory during evaluation were resubmitted to 80 GB nodes as jobs `8301679` and `8301680`, with outputs isolated in `prepared_experiments_20261116_setup_oom_retries/`.
+- Glasgow's first retry (`8298090`) stopped during an incomplete OSF download. The existing partial downloads are retained; job `8301681` retries Glasgow and rebuilds the separate `nieuwland_all_labs_*` pair set if successful.
+- The findings summary and figures were regenerated after the final keypress audio+visual rerun (`8296999`). `tests/test_next_stages.py` could not run because `pytest` is not installed in the cluster environment; scheduler generation and file diagnostics passed.

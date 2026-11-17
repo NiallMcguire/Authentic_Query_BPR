@@ -600,4 +600,4 @@ Still to generate once results are in:
 - Submitted 45 MLP Stage 2 pooling baseline jobs (`8304761`–`8304805`): five pooling modes × three modalities × three seeds.
 - Updated `stage_scheduler.py` so future visual arms use `nieuwland_all_labs_ict_pairs_RUNTIME_MASKING.npy` (332 participants). A generated Stage 1b matrix check confirmed all visual-containing arms use this file.
 - Submitted corpus text summary job `8304824`; it compares task, Alice and expanded Nieuwland query/document lengths, vocabulary, exact document overlap and query-token coverage.
-- Stage 1b and foundation-model Stage 2 are pending Stage 1a validation-based model selection.
+- Dependent launcher `8304827` waits for all 81 Stage 1a jobs, selects the per-task model/tuning setup by mean best validation loss (requiring at least two seeds), then submits Stage 1b and FM Stage 2. This avoids selecting on test MRR.

@@ -592,3 +592,12 @@ Still to generate once results are in:
 - Both setup OOM retries completed successfully on 80 GB nodes (`8301679`, `8301680`).
 - Glasgow download `8301681` failed again on an incomplete OSF transfer. A one-byte range probe confirmed OSF supports HTTP Range; the downloader now resumes partial files and retries transient disconnects. A truncated-header resume test passed. Glasgow retry `8304001` is running with this change.
 - Glasgow retry `8304001` completed the downloads but exposed duplicate BioSemi fallback picks (for example, C4 was assigned to both C4 and F4). The mapping now uses a global one-to-one assignment; a 22-channel uniqueness test passed. Job `8304083` then completed successfully: all 40 Glasgow participants yielded 80 sentences and 22 channels each. The expanded set now has 332 participants and 52,568 pairs; the runtime-masking sample remains 8,132 pairs.
+
+## 2026-11-17: Cross-Task FM and Pooling Runs Submitted
+
+- Reviewed the reading pilot (70 test queries, 35 documents per run). EEGPT, LaBraM and REVE showed the clearest task MRR above noise in at least one tuning mode; BIOT and CBraMod were not included in the follow-up shortlist. Pilot results remain exploratory because they use one seed.
+- Submitted 81 Stage 1a jobs (`8304680`–`8304760`): EEGPT, LaBraM and REVE × frozen/top/full × reading, continuous typing and imagining × seeds 42–44. All request the two-day GPU QoS limit. Model choice for subsequent stages will use validation traces, not test MRR.
+- Submitted 45 MLP Stage 2 pooling baseline jobs (`8304761`–`8304805`): five pooling modes × three modalities × three seeds.
+- Updated `stage_scheduler.py` so future visual arms use `nieuwland_all_labs_ict_pairs_RUNTIME_MASKING.npy` (332 participants). A generated Stage 1b matrix check confirmed all visual-containing arms use this file.
+- Submitted corpus text summary job `8304824`; it compares task, Alice and expanded Nieuwland query/document lengths, vocabulary, exact document overlap and query-token coverage.
+- Stage 1b and foundation-model Stage 2 are pending Stage 1a validation-based model selection.

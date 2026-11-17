@@ -585,3 +585,9 @@ Still to generate once results are in:
 - The two setup arms that ran out of memory during evaluation were resubmitted to 80 GB nodes as jobs `8301679` and `8301680`, with outputs isolated in `prepared_experiments_20261116_setup_oom_retries/`.
 - Glasgow's first retry (`8298090`) stopped during an incomplete OSF download. The existing partial downloads are retained; job `8301681` retries Glasgow and rebuilds the separate `nieuwland_all_labs_*` pair set if successful.
 - The findings summary and figures were regenerated after the final keypress audio+visual rerun (`8296999`). `tests/test_next_stages.py` could not run because `pytest` is not installed in the cluster environment; scheduler generation and file diagnostics passed.
+
+## 2026-11-17: Stage 1a Pilot Complete; Glasgow Download Retry
+
+- All 15 Stage 1a reading pilots completed successfully. At 90% masking, the strongest single-seed task-source MRRs were LaBraM full fine-tuning 0.911 and EEGPT full fine-tuning 0.865 (noise 0.111 and 0.120). These pilot results need replication before selecting a model.
+- Both setup OOM retries completed successfully on 80 GB nodes (`8301679`, `8301680`).
+- Glasgow download `8301681` failed again on an incomplete OSF transfer. A one-byte range probe confirmed OSF supports HTTP Range; the downloader now resumes partial files and retries transient disconnects. A truncated-header resume test passed. Glasgow retry `8304001` is running with this change.

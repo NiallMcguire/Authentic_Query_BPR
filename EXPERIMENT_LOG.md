@@ -591,3 +591,4 @@ Still to generate once results are in:
 - All 15 Stage 1a reading pilots completed successfully. At 90% masking, the strongest single-seed task-source MRRs were LaBraM full fine-tuning 0.911 and EEGPT full fine-tuning 0.865 (noise 0.111 and 0.120). These pilot results need replication before selecting a model.
 - Both setup OOM retries completed successfully on 80 GB nodes (`8301679`, `8301680`).
 - Glasgow download `8301681` failed again on an incomplete OSF transfer. A one-byte range probe confirmed OSF supports HTTP Range; the downloader now resumes partial files and retries transient disconnects. A truncated-header resume test passed. Glasgow retry `8304001` is running with this change.
+- Glasgow retry `8304001` completed the downloads but exposed duplicate BioSemi fallback picks (for example, C4 was assigned to both C4 and F4). The mapping now uses a global one-to-one assignment; a 22-channel uniqueness test passed. Glasgow was resubmitted as job `8304083`.

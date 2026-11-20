@@ -1,0 +1,14 @@
+External-corpus lexical summary
+================================
+Tokens are lowercase alphanumeric word forms; no stemming or semantic embeddings are used.
+Query-document coverage is the share of query tokens appearing anywhere in the paired document.
+
+task: 691 pairs, 25 participants, 48 unique documents, mean document length 27.1 tokens, query-token coverage 0.487.
+alice: 8134 pairs, 49 participants, 83 unique documents, mean document length 25.6 tokens, query-token coverage 1.000.
+nieuwland_all_labs: 8132 pairs, 332 participants, 160 unique documents, mean document length 22.5 tokens, query-token coverage 1.000.
+
+Cross-source document and vocabulary overlap
+-------------------------------------------
+task vs alice: 0 exact shared normalized documents; 80 shared word forms; vocabulary Jaccard 0.0728.
+task vs nieuwland_all_labs: 0 exact shared normalized documents; 94 shared word forms; vocabulary Jaccard 0.0753.
+alice vs nieuwland_all_labs: 0 exact shared normalized documents; 201 shared word forms; vocabulary Jaccard 0.1731.

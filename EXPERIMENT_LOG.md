@@ -601,3 +601,10 @@ Still to generate once results are in:
 - Updated `stage_scheduler.py` so future visual arms use `nieuwland_all_labs_ict_pairs_RUNTIME_MASKING.npy` (332 participants). A generated Stage 1b matrix check confirmed all visual-containing arms use this file.
 - Submitted corpus text summary job `8304824`; it compares task, Alice and expanded Nieuwland query/document lengths, vocabulary, exact document overlap and query-token coverage.
 - Dependent launcher `8304827` waits for all 81 Stage 1a jobs, selects the per-task model/tuning setup by mean best validation loss (requiring at least two seeds), then submits Stage 1b and FM Stage 2. This avoids selecting on test MRR.
+
+## 2026-11-20: Stage 1a, MLP Pooling and Corpus Analysis Complete
+
+- All 81 Stage 1a jobs completed successfully. Validation-loss selection chose EEGPT-full for reading, REVE-full for continuous typing, and EEGPT-full for imagining. Stage 1a results are in `prepared_experiments_20261117_stage1a_selected/results/`.
+- All 45 MLP pooling jobs completed successfully. At 90% masking, best mean MRR over three seeds was max pooling for reading (0.217 ± 0.003) and imagining (0.386 ± 0.013), and CLS pooling for continuous typing (0.131 ± 0.029). Full results are in `prepared_experiments_20261117_stage2_mlp/results/`.
+- Corpus analysis completed as job `8304824`; outputs: `findings/external_corpus_summary.csv` and `.txt`. There were no exact normalized document matches across task, Alice and Nieuwland. Vocabulary Jaccard was 0.073 task/Alice, 0.075 task/Nieuwland and 0.173 Alice/Nieuwland. Query-token coverage in paired documents was 0.487 for task, 1.0 for Alice and Nieuwland.
+- Initial downstream launcher `8304827` failed because Slurm wrote training logs one directory below the launcher's expected location. Log discovery now checks both locations. Rerun `8309454` succeeded, selected models using mean best validation loss across at least two seeds, and submitted 27 Stage 1b jobs (`8309455`–`8309481`) plus 45 FM pooling jobs (`8309482`–`8309526`).

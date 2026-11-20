@@ -1,0 +1,4 @@
+source,pair_count,participant_count,unique_queries,unique_documents,document_vocabulary_size,mean_query_tokens,median_query_tokens,mean_document_tokens,median_document_tokens,mean_query_token_coverage_in_document,mean_query_document_token_jaccard
+task,691,25,47,48,580,7.565846599131693,7.0,27.094066570188133,27.0,0.4872134096808482,0.1308914592471976
+alice,8134,49,1552,83,599,7.301204819277109,6.0,25.626506024096386,21.0,1.0,0.3073601294877465
+nieuwland_all_labs,8132,332,1783,160,763,6.322429906542056,6.0,22.49754058042302,22.0,1.0,0.30450247867775765

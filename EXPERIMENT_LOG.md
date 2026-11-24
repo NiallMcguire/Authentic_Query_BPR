@@ -616,3 +616,9 @@ Still to generate once results are in:
 - Synthetic regression tests verify participant/query disjointness and that every group is tested once; real data checks found 25 reading, 23 typing and 25 imagining participants, and 47 shared question groups per task. The fold sizes are therefore 2–3 held-out participants or 4–5 held-out question groups per fold.
 - Submitted all 360 jobs: 180 participant-held-out and 180 unseen-query runs, each covering three modalities, two encoders, 10 folds and three seeds. Job IDs are `8313895`–`8314254`; scripts and matrix are in `Audio_BPR/prepared_experiments_20261123_generalization/`.
 - The full `test_next_stages.py` unittest module passes (10 tests).
+
+## 2026-11-24: Retry Query-Typing Generalization Runs
+
+- The first 60 query-held-out typing jobs failed during W&B initialization, before training, because fold-specific condition tags exceeded W&B's 64-character limit.
+- W&B tags are now capped at 64 characters with a stable hash suffix; the new tag regression test, 10-fold split tests, and full `test_next_stages.py` suite pass.
+- Resubmitted the 60 failed query-typing runs as jobs `8314587`–`8314646`. The queued subject-held-out typing jobs also use the fix. At log time, 3 generalization jobs were running and the remaining submitted jobs were pending under the per-user job limit.

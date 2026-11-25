@@ -636,3 +636,4 @@ Still to generate once results are in:
 - Noise ranking is now evaluated separately at all six masking levels (0/25/50/75/90/100), with the legacy 90% noise metric retained for compatibility.
 - Submitted 360 jobs (`8316578`–`8316937`): 10-fold subject and query protocols × reading, continuous typing and imagining × Transformer and selected foundation model × three seeds. Selected FMs remain EEGPT-full for reading/imagining and REVE-full for typing. The test candidate pool is built from all three held-out sources.
 - The 14-test `test_next_stages.py` suite passes. At submission check, all 360 jobs were accepted and pending in Slurm.
+- The broad batch was canceled before it ran. Per the narrowed reading-only request, submitted 120 jobs (`8316944`–`8317063`): subject and unseen-query protocols × Transformer and EEGPT-full × 10 folds × three seeds. Every partition includes task, Alice and Nieuwland data, and noise is evaluated at all six masking levels.

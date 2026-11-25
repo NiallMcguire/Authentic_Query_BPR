@@ -628,3 +628,11 @@ Still to generate once results are in:
 - The W&B-tag retry fixed REVE query-held-out typing (30/30 completed). Transformer typing then exposed a second issue: its learned positional embedding was fixed at 50 units, while typing dataloaders use up to 100. This caused the 30 query-held-out Transformer typing retries and 30 subject-held-out Transformer typing jobs to fail with CUDA index errors.
 - The Transformer now sizes positional embeddings from the configured EEG sequence length. A 100-unit forward-pass regression test and the full 12-test `test_next_stages.py` suite pass.
 - Resubmitted all 60 Transformer typing jobs for both protocols as jobs `8316515`–`8316574`. They are pending under the per-user limit. At this snapshot, 300 unique generalization runs had completed; the remaining 60 typing runs are queued for retry.
+
+## 2026-11-25: Mixed-Source, All-Masking Generalization Runs
+
+- Replaced the superseded task-only retries with a mixed-source matrix using task, Alice and the 332-participant Nieuwland runtime set in training, validation and test. Training uses equal-probability source sampling; validation/test retain all sources and report source-specific metrics.
+- Subject folds are stratified by source and participant. Query folds are stratified by source and normalized question/document identity; exact shared query text stays grouped across sources. Synthetic tests verify each source appears in every partition and no query group crosses splits.
+- Noise ranking is now evaluated separately at all six masking levels (0/25/50/75/90/100), with the legacy 90% noise metric retained for compatibility.
+- Submitted 360 jobs (`8316578`–`8316937`): 10-fold subject and query protocols × reading, continuous typing and imagining × Transformer and selected foundation model × three seeds. Selected FMs remain EEGPT-full for reading/imagining and REVE-full for typing. The test candidate pool is built from all three held-out sources.
+- The 14-test `test_next_stages.py` suite passes. At submission check, all 360 jobs were accepted and pending in Slurm.

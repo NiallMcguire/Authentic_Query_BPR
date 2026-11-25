@@ -622,3 +622,9 @@ Still to generate once results are in:
 - The first 60 query-held-out typing jobs failed during W&B initialization, before training, because fold-specific condition tags exceeded W&B's 64-character limit.
 - W&B tags are now capped at 64 characters with a stable hash suffix; the new tag regression test, 10-fold split tests, and full `test_next_stages.py` suite pass.
 - Resubmitted the 60 failed query-typing runs as jobs `8314587`–`8314646`. The queued subject-held-out typing jobs also use the fix. At log time, 3 generalization jobs were running and the remaining submitted jobs were pending under the per-user job limit.
+
+## 2026-11-25: Transformer Typing Sequence-Length Recovery
+
+- The W&B-tag retry fixed REVE query-held-out typing (30/30 completed). Transformer typing then exposed a second issue: its learned positional embedding was fixed at 50 units, while typing dataloaders use up to 100. This caused the 30 query-held-out Transformer typing retries and 30 subject-held-out Transformer typing jobs to fail with CUDA index errors.
+- The Transformer now sizes positional embeddings from the configured EEG sequence length. A 100-unit forward-pass regression test and the full 12-test `test_next_stages.py` suite pass.
+- Resubmitted all 60 Transformer typing jobs for both protocols as jobs `8316515`–`8316574`. They are pending under the per-user limit. At this snapshot, 300 unique generalization runs had completed; the remaining 60 typing runs are queued for retry.
